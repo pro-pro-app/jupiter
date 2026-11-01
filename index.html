@@ -283,7 +283,14 @@ input.addEventListener('input', () => { input.style.height = 'auto'; input.style
 input.addEventListener('keydown', e => {
   if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); $('form').requestSubmit(); }
 });
-$('stop').onclick = () => ctrl && ctrl.abort();
+// 중지: 누르는 즉시(pointerdown) 반응. 워커가 멈추길 기다리지 않고 화면부터 바로 정리
+const stop = () => {
+  if (!ctrl || ctrl.signal.aborted) return;
+  ctrl.abort();
+  $('stop').hidden = true; $('send').hidden = false;
+};
+$('stop').addEventListener('pointerdown', e => { e.preventDefault(); stop(); });
+$('stop').onclick = stop; // 키보드(Enter/Space)용
 document.addEventListener('touchstart', () => {}, { passive: true }); // iOS Safari에서 :active(누름 효과)가 동작하도록
 
 // ---------- 대화 ----------
@@ -315,24 +322,37 @@ $('form').addEventListener('submit', async e => {
   const clean = () => acc.replace(/<think>[\s\S]*?(<\/think>|$)/g, '').trim();
   ctrl = new AbortController();
   $('send').hidden = true; $('stop').hidden = false;
+  // 중지 신호가 오면 바로 { done: true } 로 끝나는 Promise → 다음 토큰을 기다리지 않고 루프 탈출
+  const aborted = new Promise(r => ctrl.signal.addEventListener('abort', () => r({ done: true }), { once: true }));
+  const quiet = p => { p.catch(() => {}); return p; }; // 버려진 Promise의 AbortError 경고 방지
+  // 그리기는 프레임당 1번만 (매 토큰마다 마크다운 전체를 다시 그리면 메인 스레드가 막혀 클릭이 늦게 먹힘)
+  let raf = 0;
+  const paint = () => {
+    raf = 0;
+    const c = clean();
+    // 그리기 전에 맨 아래 근처인지 확인 → 위로 스크롤해 읽는 중이면 자동 스크롤 안 함
+    const stick = chat.scrollHeight - chat.scrollTop - chat.clientHeight < 40;
+    if (c) render(out, c); else out.textContent = '(생각하는 중...)';
+    out.classList.toggle('thinking', !c);
+    out.classList.toggle('md', !!c);
+    if (stick) chat.scrollTop = chat.scrollHeight;
+  };
   try {
-    const stream = await wllama.createChatCompletion({
+    const stream = await Promise.race([quiet(wllama.createChatCompletion({
       messages: history, stream: true, max_tokens: 10240,
       temperature: 0.6, top_p: 0.8, top_k: 20,
       chat_template_kwargs: { enable_thinking: false },
       abortSignal: ctrl.signal
-    });
-    for await (const chunk of stream) {
-      feed(chunk.choices[0]?.delta?.content ?? '');
-      const c = clean();
-      // 그리기 전에 맨 아래 근처인지 확인 → 위로 스크롤해 읽는 중이면 자동 스크롤 안 함
-      const stick = chat.scrollHeight - chat.scrollTop - chat.clientHeight < 40;
-      if (c) render(out, c); else out.textContent = '(생각하는 중...)';
-      out.classList.toggle('thinking', !c);
-      out.classList.toggle('md', !!c);
-      if (stick) chat.scrollTop = chat.scrollHeight;
+    })), aborted]);
+    const it = ctrl.signal.aborted ? null : stream[Symbol.asyncIterator]();
+    while (it) {
+      const { done, value } = await Promise.race([quiet(it.next()), aborted]);
+      if (done || ctrl.signal.aborted) break;
+      feed(value.choices[0]?.delta?.content ?? '');
+      if (!raf) raf = requestAnimationFrame(paint);
     }
-    if (held) { flush(); render(out, clean()); out.classList.remove('thinking'); out.classList.add('md'); }
+    cancelAnimationFrame(raf);
+    flush(); paint();
     history.push({ role: 'assistant', content: clean() });
   } catch (err) {
     if (err.name === 'AbortError' || err.name === 'WllamaAbortError') {
