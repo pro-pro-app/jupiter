@@ -155,7 +155,7 @@ const wllama = new Wllama({
   default: 'https://cdn.jsdelivr.net/npm/@wllama/wllama@3.8.1/esm/wasm/wllama.wasm'
 }, { suppressNativeLog: true });
 let ctrl = null;
-const history = [];
+let history = []; // 새 대화를 누르면 새 배열로 교체
 
 
 async function opfsDir() {
@@ -298,8 +298,9 @@ $('form').addEventListener('submit', async e => {
   e.preventDefault();
   const text = input.value.trim();
   if (!text || $('send').disabled || ctrl) return;
+  const hist = history; // 이 답변이 속한 대화 (도중에 새 대화로 바뀌어도 새 대화에 섞이지 않게)
 
-  history.push({ role: 'user', content: text });
+  hist.push({ role: 'user', content: text });
   addMsg('user', text);
   input.value = ''; input.style.height = 'auto';
 
@@ -320,7 +321,7 @@ $('form').addEventListener('submit', async e => {
   };
   const flush = () => { acc += held; held = ''; state = 0; }; // 끝까지 안 닫히면 그대로 보여줌
   const clean = () => acc.replace(/<think>[\s\S]*?(<\/think>|$)/g, '').trim();
-  ctrl = new AbortController();
+  const my = ctrl = new AbortController();
   $('send').hidden = true; $('stop').hidden = false;
   // 중지 신호가 오면 바로 { done: true } 로 끝나는 Promise → 다음 토큰을 기다리지 않고 루프 탈출
   const aborted = new Promise(r => ctrl.signal.addEventListener('abort', () => r({ done: true }), { once: true }));
@@ -339,7 +340,7 @@ $('form').addEventListener('submit', async e => {
   };
   try {
     const stream = await Promise.race([quiet(wllama.createChatCompletion({
-      messages: history, stream: true, max_tokens: 10240,
+      messages: hist, stream: true, max_tokens: 10240,
       temperature: 0.6, top_p: 0.8, top_k: 20,
       chat_template_kwargs: { enable_thinking: false },
       abortSignal: ctrl.signal
@@ -353,16 +354,16 @@ $('form').addEventListener('submit', async e => {
     }
     cancelAnimationFrame(raf);
     flush(); paint();
-    history.push({ role: 'assistant', content: clean() });
+    hist.push({ role: 'assistant', content: clean() });
   } catch (err) {
     if (err.name === 'AbortError' || err.name === 'WllamaAbortError') {
       flush();
-      history.push({ role: 'assistant', content: clean() });
+      hist.push({ role: 'assistant', content: clean() });
     } else {
       out.classList.add('err'); out.classList.remove('md');
       console.error(err);
       out.textContent = '대화 길이가 길어서 답변을 만들지 못했어요. 새로고침 해 주세요.';
-      history.pop();
+      hist.pop();
     }
   } finally {
     if (out.classList.contains('err') || clean()) out.classList.remove('thinking');
@@ -370,16 +371,17 @@ $('form').addEventListener('submit', async e => {
       addCopy(out, clean());
       addAd(out);
     }
-    $('send').hidden = false; $('stop').hidden = true; ctrl = null;
+    if (ctrl === my) { $('send').hidden = false; $('stop').hidden = true; ctrl = null; } // 새 대화로 넘어갔으면 건드리지 않음
   }
 });
 // ---------- 새 대화 / 맨 아래로 ----------
 const welcome = $('welcome');
 $('new').onclick = () => {
-if (ctrl) return; // 답변 중에는 무시
-history.length = 0;
-chat.replaceChildren(welcome);
-input.focus();
+  stop(); ctrl = null; // 답변 중이면 즉시 중지하고 바로 새 대화로
+  $('send').hidden = false; $('stop').hidden = true;
+  history = [];
+  chat.replaceChildren(welcome);
+  input.focus();
 };
 const down = $('down');
 chat.addEventListener('scroll', () => { down.hidden = chat.scrollHeight - chat.scrollTop - chat.clientHeight < 40; }, { passive: true });
