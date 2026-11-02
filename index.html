@@ -143,8 +143,8 @@ marked.setOptions({ gfm: true, breaks: true });
 DOMPurify.addHook('afterSanitizeAttributes', n => { if (n.tagName === 'A') { n.target = '_blank'; n.rel = 'noopener noreferrer'; } });
 const md = text => DOMPurify.sanitize(marked.parse(text));
 
-const MODEL_URL = 'https://huggingface.co/aproai/PRO-2/resolve/main/model.gguf';
-const MODEL_FILE = 'model.gguf';
+const MODEL_URL = 'https://huggingface.co/jupiter-ai/Jupiter-V3/resolve/main/ai.gguf';
+const MODEL_FILE = 'ai.gguf';
 const N_THREADS = 6; // CPU 추론 스레드 수 (코어가 적으면 그만큼)
 
 const AD = { text: '이곳에 월 1만원으로 독점 광고하기', url: 'mailto:minupark@anplick.com' };
