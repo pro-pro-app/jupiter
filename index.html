@@ -209,7 +209,7 @@ async function loadModel() {
     });
     $('info').textContent = '준비 중…';
     await wllama.loadModel([modelBlob], {
-      n_ctx: 32768,
+      n_ctx: 16384,
       n_threads: Math.min(N_THREADS, navigator.hardwareConcurrency || N_THREADS),
       n_gpu_layers: 0,
       no_kv_offload: true,
@@ -340,7 +340,7 @@ $('form').addEventListener('submit', async e => {
   };
   try {
     const stream = await Promise.race([quiet(wllama.createChatCompletion({
-      messages: hist, stream: true,
+      messages: hist, stream: true, max_tokens: 2048,
       temperature: 0.2, top_p: 0.8, top_k: 20,
       chat_template_kwargs: { enable_thinking: false },
       abortSignal: ctrl.signal
