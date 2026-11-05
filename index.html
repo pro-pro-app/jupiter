@@ -341,7 +341,7 @@ $('form').addEventListener('submit', async e => {
   try {
     const stream = await Promise.race([quiet(wllama.createChatCompletion({
       messages: hist, stream: true,
-      temperature: 0.7, top_p: 0.8, top_k: 20,
+      temperature: 0.6, top_p: 0.5, top_k: 20,
       chat_template_kwargs: { enable_thinking: false },
       abortSignal: ctrl.signal
     })), aborted]);
