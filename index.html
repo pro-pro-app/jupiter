@@ -20,25 +20,21 @@ if (!window.crossOriginIsolated && window.isSecureContext && 'serviceWorker' in 
 }
 </script>
 <style>
-/* 흰 배경 + 검은 강조색 (데스크톱 앱 ui.py 와 같은 디자인) */
 :root{--bg:#fff;--fg:#1a1a1a;--mut:#8a8a8a;--line:#e3e3e3;--soft:#f3f3f3;--code:#f7f7f7;--accent:#111;--col:760px}
 *{box-sizing:border-box}
 html,body{height:100%;overflow:hidden}
 body{margin:0;height:100vh;height:100dvh;display:flex;flex-direction:column;background:var(--bg);color:var(--fg);font:15px/1.6 "Pretendard Variable",Pretendard,"Apple SD Gothic Neo","Malgun Gothic","Segoe UI",sans-serif}
 
-/* 상단: 제목 + 새 대화 */
 header{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 20px 10px;background:var(--bg)}
 h1{margin:0;font-size:17px;font-weight:600}
 #new{background:#fff;color:var(--fg);border:1px solid #e5e5e5;border-radius:15px;padding:5px 14px;font-size:13px}
 #new:not(:disabled):hover{background:#f5f5f5;opacity:1}
 
-/* 모델 다운로드: 얇은 진행률 막대 + 작은 안내 */
 #status{display:flex;flex-direction:column;align-items:center;gap:6px}
 #bar{width:100%;height:3px;background:#eee;overflow:hidden}
 #bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .4s ease-out}
 #info{color:var(--mut);font-size:13px;padding:0 16px 5px;text-align:center}
 
-/* 채팅: 가운데 760px 열 */
 main{flex:1;min-height:0;overflow-y:auto;padding:24px max(16px,calc((100% - var(--col)) / 2));display:flex;flex-direction:column;gap:14px;scrollbar-width:thin;scrollbar-color:#dcdcdc transparent}
 main::-webkit-scrollbar{width:8px}
 main::-webkit-scrollbar-thumb{background:#dcdcdc;border-radius:4px}
@@ -53,7 +49,6 @@ main::-webkit-scrollbar-thumb:hover{background:#bdbdbd}
 @keyframes pop{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 .msg.md{white-space:normal}
 
-/* 마크다운 */
 .md>:first-child{margin-top:0}.md>:last-child{margin-bottom:0}
 .md p,.md ul,.md ol,.md pre,.md blockquote,.md table{margin:0 0 .8em}
 .md h1,.md h2,.md h3,.md h4{margin:1em 0 .45em;line-height:1.3;font-weight:600}
@@ -68,14 +63,12 @@ main::-webkit-scrollbar-thumb:hover{background:#bdbdbd}
 .md th,.md td{border:1px solid #e5e5e5;padding:6px 10px}.md th{background:#fafafa;font-weight:600}
 .md hr{border:0;border-top:1px solid #ececec;margin:1em 0}
 
-/* 입력창: 둥근 카드 + 그림자 */
 footer{position:relative;padding:8px max(16px,calc((100% - var(--col)) / 2)) 18px;background:var(--bg)}
 #form{display:flex;flex-direction:column;gap:6px;background:#fff;border:1px solid var(--line);border-radius:24px;padding:14px 12px 10px 18px;box-shadow:0 2px 24px rgba(0,0,0,.09);transition:border-color .2s}
 #form:focus-within{border-color:#cfcfcf}
 textarea{width:100%;resize:none;max-height:200px;border:0;background:transparent;color:var(--fg);padding:2px;font:inherit;outline:none}
 textarea::placeholder{color:#a3a3a3}
 .tools{display:flex;justify-content:flex-end;align-items:center;gap:8px}
-/* 이미지 첨부 */
 #attach{margin-right:auto;width:34px;height:34px;padding:0;border-radius:17px;background:#fff;color:var(--fg);border:1px solid #e5e5e5;font-size:20px;font-weight:400;line-height:32px}
 #attach:not(:disabled):hover{background:#f5f5f5;opacity:1}
 #thumbs{display:flex;flex-wrap:wrap;gap:8px;padding-top:4px}
@@ -88,22 +81,18 @@ textarea::placeholder{color:#a3a3a3}
 button{background:var(--accent);color:#fff;border:0;border-radius:20px;padding:10px 18px;cursor:pointer;font:inherit;transition:opacity .2s,transform .5s cubic-bezier(.34,2,.5,1),background-color .2s,color .2s,border-color .2s;-webkit-tap-highlight-color:transparent}
 button:not(:disabled):hover{opacity:.85}
 button:not(:disabled):active{transform:scale(.82);transition-duration:.2s,0s}
-/* 눌렀을 때 버튼이 82%로 줄어도 클릭 영역은 원래 크기 유지 (1/0.82) — 안 그러면 가장자리를 누르고 떼는 순간 버튼 밖이 돼서 클릭이 무시됨 */
 button{position:relative}
 button::after{content:'';position:absolute;inset:0}
 button:not(:disabled):active::after{transform:scale(1.22)}
 button:disabled{opacity:.5;cursor:default}
-/* 보내기/중지: 34px 검은 원. 입력이 비어 있으면 회색 */
 #send,#stop{width:34px;height:34px;padding:0;border-radius:17px;background:var(--accent);color:#fff;font-size:16px;font-weight:700;line-height:34px}
 #stop{font-size:12px}
 #send:disabled,#form:has(textarea:placeholder-shown) #send{background:#d6d6d6;opacity:1}
 #send:not(:disabled):hover,#stop:hover{background:#333;opacity:1}
-/* 위로 올려 보고 있을 때 뜨는 '맨 아래로' 버튼 */
 #down{position:absolute;left:50%;top:-44px;margin-left:-17px;width:34px;height:34px;padding:0;border-radius:17px;background:#fff;color:var(--fg);border:1px solid var(--line);box-shadow:0 2px 10px rgba(0,0,0,.08);font-size:16px;line-height:32px}
 #down:not(:disabled):hover{background:#f5f5f5;opacity:1}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 
-/* 복사 버튼 */
 .actions{display:flex;justify-content:flex-start;margin-top:8px}
 .copy{background:transparent;color:var(--mut);border:1px solid #e5e5e5;border-radius:999px;padding:2px 10px;font-size:12px}
 .copy:not(:disabled):hover{color:var(--fg);background:#f5f5f5;opacity:1}
@@ -111,7 +100,6 @@ button:disabled{opacity:.5;cursor:default}
 .md .code pre{margin:0;padding-right:56px}
 .md .code .copy{position:absolute;top:7px;right:7px;background:#fff}
 
-/* 광고 */
 .ad{margin-top:12px;white-space:normal;font-style:normal;font-size:13px;color:#555}
 .ad hr{border:0;border-top:1px solid #ececec;margin:8px 0}
 .ad-tag{color:var(--mut);font-size:12px;margin-left:6px}
@@ -151,17 +139,16 @@ import { marked } from 'https://cdn.jsdelivr.net/npm/marked@15.0.12/+esm';
 import DOMPurify from 'https://cdn.jsdelivr.net/npm/dompurify@3.2.6/+esm';
 
 marked.setOptions({ gfm: true, breaks: true });
-// 답변 속 링크는 새 탭으로 (대화 화면이 날아가지 않게)
 DOMPurify.addHook('afterSanitizeAttributes', n => { if (n.tagName === 'A') { n.target = '_blank'; n.rel = 'noopener noreferrer'; } });
 const md = text => DOMPurify.sanitize(marked.parse(text));
 
 const MODEL_URL = 'https://huggingface.co/jupiter-ai/Jupiter-V3/resolve/main/ai.gguf';
 const MODEL_FILE = 'ai.gguf';
-const MMPROJ_URL = 'https://huggingface.co/jupiter-ai/Jupiter-V3/resolve/main/mmproj.gguf'; // 이미지 인식용 (레포에 없으면 텍스트 전용으로 동작)
+const MMPROJ_URL = 'https://huggingface.co/jupiter-ai/Jupiter-V3/resolve/main/mmproj.gguf';
 const MMPROJ_FILE = 'mmproj.gguf';
-const IMG_MAX = 1024; // 첨부 이미지 긴 변 최대 px (클수록 인식이 느려짐)
+const IMG_MAX = 1024;
 let vision = false;
-const N_THREADS = 6; // CPU 추론 스레드 수 (코어가 적으면 그만큼)
+const N_THREADS = 6;
 
 const AD = { text: '이곳에 월 1만원으로 독점 광고하기', url: 'mailto:minupark@anplick.com' };
 
@@ -171,7 +158,7 @@ const wllama = new Wllama({
   default: 'https://cdn.jsdelivr.net/npm/@wllama/wllama@3.8.1/esm/wasm/wllama.wasm'
 }, { suppressNativeLog: true });
 let ctrl = null;
-let history = []; // 새 대화를 누르면 새 배열로 교체
+let history = [];
 
 
 async function opfsDir() {
@@ -182,7 +169,7 @@ async function fetchFile(url, name, onProg) {
   const dir = await opfsDir();
   if (dir) {
 
-    try { // 완료된 캐시가 있고, HF 파일과 크기가 같으면 사용 (레포에서 파일 교체 시 자동 재다운로드)
+    try {
       await dir.getFileHandle(name + '.done');
       const f = await (await dir.getFileHandle(name)).getFile();
       let remote = 0;
@@ -212,13 +199,12 @@ async function fetchFile(url, name, onProg) {
   return new Blob(chunks);
 }
 
-// ---------- 모델 로드 part ----------
 async function loadModel() {
   try {
     const modelBlob = await fetchFile(MODEL_URL, MODEL_FILE, (l, t) => {
       const p = t ? Math.round(l / t * 100) : 0;
       $('bar').firstElementChild.style.width = p + '%';
-      $('info').textContent = `AI 모델 다운로드 중... (최초 1회) ${(l / 1e6).toFixed(0)} / ${(t / 1e6).toFixed(0)} MB (${p}%)`;
+      $('info').textContent = `(1/2) AI 모델 다운로드 중... (최초 1회) ${(l / 1e6).toFixed(0)} / ${(t / 1e6).toFixed(0)} MB (${p}%)`;
     });
     $('info').textContent = '준비 중…';
     let mmprojBlob = null;
@@ -226,7 +212,7 @@ async function loadModel() {
       mmprojBlob = await fetchFile(MMPROJ_URL, MMPROJ_FILE, (l, t) => {
         const p = t ? Math.round(l / t * 100) : 0;
         $('bar').firstElementChild.style.width = p + '%';
-        $('info').textContent = `이미지 인식 모델 다운로드 중... (최초 1회) ${(l / 1e6).toFixed(0)} / ${(t / 1e6).toFixed(0)} MB (${p}%)`;
+        $('info').textContent = `(2/2) 이미지 인식 모델 다운로드 중... (최초 1회) ${(l / 1e6).toFixed(0)} / ${(t / 1e6).toFixed(0)} MB (${p}%)`;
       });
     } catch (e) { console.warn('mmproj 없음 → 텍스트 전용', e); }
     $('info').textContent = '준비 중…';
@@ -256,15 +242,14 @@ async function loadModel() {
 
 loadModel();
 
-// ---------- 이미지 첨부 ----------
-let pending = []; // 다음 메시지에 붙일 이미지 (Blob)
-async function shrink(file) { // 긴 변을 IMG_MAX 이하로 줄여 JPEG로 (큰 사진은 인식이 매우 느려짐)
+let pending = [];
+async function shrink(file) {
   const bmp = await createImageBitmap(file);
   const k = Math.min(1, IMG_MAX / Math.max(bmp.width, bmp.height));
   const c = document.createElement('canvas');
   c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
   const g = c.getContext('2d');
-  g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height); // 투명 PNG 배경은 흰색으로
+  g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height);
   g.drawImage(bmp, 0, 0, c.width, c.height);
   bmp.close();
   return new Promise(r => c.toBlob(r, 'image/jpeg', 0.9));
@@ -288,19 +273,16 @@ async function addImages(files) {
 }
 $('attach').onclick = () => $('file').click();
 $('file').onchange = e => { addImages([...e.target.files]); e.target.value = ''; };
-// 붙여넣기 / 끌어다 놓기
 input.addEventListener('paste', e => {
   const fs = [...e.clipboardData.files];
   if (vision && fs.some(f => f.type.startsWith('image/'))) { e.preventDefault(); addImages(fs); }
 });
 $('form').addEventListener('dragover', e => { if (vision) e.preventDefault(); });
 $('form').addEventListener('drop', e => { if (!vision) return; e.preventDefault(); addImages([...e.dataTransfer.files]); });
-// 이미지가 있는 메시지는 [이미지..., 텍스트] 형식으로 변환 (요청마다 새 ArrayBuffer: 워커로 넘기면 원본이 비워질 수 있어서)
 const toMessages = h => Promise.all(h.map(async m => m.images
   ? { role: m.role, content: [...await Promise.all(m.images.map(async b => ({ type: 'image', data: await b.arrayBuffer() }))), { type: 'text', text: m.content }] }
   : { role: m.role, content: m.content }));
 
-// ---------- UI ----------
 function addMsg(role, text) {
   const d = document.createElement('div');
   d.className = 'msg ' + role;
@@ -310,7 +292,7 @@ function addMsg(role, text) {
 }
 async function copyText(text) {
   try { await navigator.clipboard.writeText(text); return; } catch {}
-  const t = document.createElement('textarea'); // http 등 clipboard API를 못 쓰는 환경용
+  const t = document.createElement('textarea');
   t.value = text; t.style.cssText = 'position:fixed;opacity:0';
   document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove();
 }
@@ -327,7 +309,6 @@ function addCopy(el, text) {
   const wrap = document.createElement('div');
   wrap.className = 'actions'; wrap.appendChild(copyBtn(() => text)); el.appendChild(wrap);
 }
-// ``` 코드 블록마다 개별 복사 버튼
 function addCodeCopy(el) {
   for (const pre of el.querySelectorAll('pre')) {
     const wrap = document.createElement('div');
@@ -335,7 +316,6 @@ function addCodeCopy(el) {
     pre.replaceWith(wrap); wrap.append(pre, copyBtn(() => (pre.querySelector('code') ?? pre).textContent));
   }
 }
-// 답변 아래 광고: 구분선 / 광고 한 줄 (AD) / '더 알아보기' 링크 / 구분선
 function addAd(el) {
   const ad = document.createElement('div');
   ad.className = 'ad';
@@ -353,24 +333,22 @@ input.addEventListener('input', () => { input.style.height = 'auto'; input.style
 input.addEventListener('keydown', e => {
   if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); $('form').requestSubmit(); }
 });
-// 중지: 누르는 즉시(pointerdown) 반응. 워커가 멈추길 기다리지 않고 화면부터 바로 정리
 const stop = () => {
   if (!ctrl || ctrl.signal.aborted) return;
   ctrl.abort();
   $('stop').hidden = true; $('send').hidden = false;
 };
 $('stop').addEventListener('pointerdown', e => { e.preventDefault(); stop(); });
-$('stop').onclick = stop; // 키보드(Enter/Space)용
-document.addEventListener('touchstart', () => {}, { passive: true }); // iOS Safari에서 :active(누름 효과)가 동작하도록
+$('stop').onclick = stop;
+document.addEventListener('touchstart', () => {}, { passive: true });
 
-// ---------- 대화 ----------
 $('form').addEventListener('submit', async e => {
   e.preventDefault();
   const imgs = pending;
   const text = input.value.trim() || (imgs.length ? '이 이미지를 설명해 주세요.' : '');
   if (!text || $('send').disabled || ctrl) return;
   pending = []; drawThumbs();
-  const hist = history; // 이 답변이 속한 대화 (도중에 새 대화로 바뀌어도 새 대화에 섞이지 않게)
+  const hist = history;
 
   hist.push(imgs.length ? { role: 'user', content: text, images: imgs } : { role: 'user', content: text });
   const um = addMsg('user', text);
@@ -378,9 +356,7 @@ $('form').addEventListener('submit', async e => {
   input.value = ''; input.style.height = 'auto';
 
   const out = addMsg('bot thinking', '(생각하는 중...)');
-  // <|...|> 숨김 필터: '<'가 나오면 다음 글자까지 보류 → '|'면 '|>'가 나올 때까지 보류 후 통째로 숨김,
-  // '|'가 아니면 보류했던 '<'를 그대로 보여줌
-  let acc = '', held = '', state = 0; // 0: 일반, 1: '<' 보류, 2: '<|' 안, 3: '<|...|' (다음 '>' 대기)
+  let acc = '', held = '', state = 0;
   const feed = s => {
     for (const ch of s) {
       if (state === 0) { if (ch === '<') { held = ch; state = 1; } else acc += ch; }
@@ -392,19 +368,16 @@ $('form').addEventListener('submit', async e => {
       else { held += ch; state = ch === '>' ? 0 : ch === '|' ? 3 : 2; if (state === 0) held = ''; }
     }
   };
-  const flush = () => { acc += held; held = ''; state = 0; }; // 끝까지 안 닫히면 그대로 보여줌
+  const flush = () => { acc += held; held = ''; state = 0; };
   const clean = () => acc.replace(/<think>[\s\S]*?(<\/think>|$)/g, '').trim();
   const my = ctrl = new AbortController();
   $('send').hidden = true; $('stop').hidden = false;
-  // 중지 신호가 오면 바로 { done: true } 로 끝나는 Promise → 다음 토큰을 기다리지 않고 루프 탈출
   const aborted = new Promise(r => ctrl.signal.addEventListener('abort', () => r({ done: true }), { once: true }));
-  const quiet = p => { p.catch(() => {}); return p; }; // 버려진 Promise의 AbortError 경고 방지
-  // 그리기는 프레임당 1번만 (매 토큰마다 마크다운 전체를 다시 그리면 메인 스레드가 막혀 클릭이 늦게 먹힘)
+  const quiet = p => { p.catch(() => {}); return p; };
   let raf = 0;
   const paint = () => {
     raf = 0;
     const c = clean();
-    // 그리기 전에 맨 아래 근처인지 확인 → 위로 스크롤해 읽는 중이면 자동 스크롤 안 함
     const stick = chat.scrollHeight - chat.scrollTop - chat.clientHeight < 40;
     if (c) render(out, c); else out.textContent = '(생각하는 중...)';
     out.classList.toggle('thinking', !c);
@@ -444,13 +417,12 @@ $('form').addEventListener('submit', async e => {
       addCopy(out, clean());
       addAd(out);
     }
-    if (ctrl === my) { $('send').hidden = false; $('stop').hidden = true; ctrl = null; } // 새 대화로 넘어갔으면 건드리지 않음
+    if (ctrl === my) { $('send').hidden = false; $('stop').hidden = true; ctrl = null; }
   }
 });
-// ---------- 새 대화 / 맨 아래로 ----------
 const welcome = $('welcome');
 $('new').onclick = () => {
-  stop(); ctrl = null; // 답변 중이면 즉시 중지하고 바로 새 대화로
+  stop(); ctrl = null;
   $('send').hidden = false; $('stop').hidden = true;
   history = []; pending = []; drawThumbs();
   chat.replaceChildren(welcome);
